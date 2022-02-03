@@ -1,5 +1,5 @@
 let lastRenderTime = 0;
-const SPEED = 3;
+let SPEED = 5;
 const canvas = document.createElement("canvas");
 const ctx = canvas.getContext("2d");
 const BLOCK_SIZE = 30;
@@ -7,6 +7,19 @@ const WIDTH = BLOCK_SIZE * 20;
 const HEIGHT = BLOCK_SIZE * 20;
 
 let Score = 0;
+
+function setHighScore(score) {
+  localStorage.setItem("high_score", JSON.stringify(score));
+}
+
+function getHightScore() {
+  var val = localStorage.getItem("high_score");
+  if (val === null) {
+    setHighScore(0);
+    return 0;
+  }
+  return JSON.parse(val);
+}
 
 // directions
 const RIGHT = 0;
@@ -60,8 +73,10 @@ class Snake {
   }
 
   food_() {
-    let x = random(Math.floor(canvas.width / BLOCK_SIZE)) * BLOCK_SIZE;
-    let y = random(Math.floor(canvas.height / BLOCK_SIZE)) * BLOCK_SIZE;
+    let x = (random(Math.floor(canvas.width / BLOCK_SIZE)) * BLOCK_SIZE) - BLOCK_SIZE;
+    let y = (random(Math.floor(canvas.height / BLOCK_SIZE)) * BLOCK_SIZE) - BLOCK_SIZE;
+    if(x + BLOCK_SIZE > canvas.width ||  x - BLOCK_SIZE < 0) this.food_();
+    if(y + BLOCK_SIZE > canvas.height || y - BLOCK_SIZE < 0) this.food_();
     this.food = new Rect(x, y);
   }
 
@@ -106,10 +121,10 @@ class Snake {
 
   check_collision() {
     if (
-      this.head.x > WIDTH ||
-      this.head.x < 0 ||
-      this.head.y > HEIGHT ||
-      this.head.y < 0
+      this.head.x + BLOCK_SIZE > WIDTH ||
+      this.head.x + BLOCK_SIZE < 0 ||
+      this.head.y + BLOCK_SIZE > HEIGHT ||
+      this.head.y + BLOCK_SIZE < 0
     ) {
       return true;
     }
