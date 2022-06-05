@@ -8,24 +8,25 @@ const HEIGHT = BLOCK_SIZE * 20;
 
 let Score = 0;
 
-function setHighScore(score) {
-  localStorage.setItem("high_score", JSON.stringify(score));
-}
-
-function getHightScore() {
-  var val = localStorage.getItem("high_score");
-  if (val === null) {
-    setHighScore(0);
-    return 0;
+class Rect {
+  constructor(x, y, color) {
+    this.x = x;
+    this.y = y;
+    this.color = color;
   }
-  return JSON.parse(val);
-}
 
+  draw(ctx) {
+    ctx.fillStyle = this.color;
+    ctx.fillRect(this.x, this.y, BLOCK_SIZE, BLOCK_SIZE);
+  }
+}
 // directions
 const RIGHT = 0;
 const LEFT = 1;
 const UP = 2;
 const DOWN = 3;
+const SNAKE_COLOR = "red";
+const FOOD_COLOR = "green";
 
 prepare();
 window.requestAnimationFrame(main);
@@ -43,17 +44,6 @@ function main(crntTime) {
   lastRenderTime = crntTime;
 }
 
-class Rect {
-  constructor(x, y) {
-    this.x = x;
-    this.y = y;
-  }
-
-  draw(ctx, color) {
-    ctx.fillStyle = color;
-    ctx.fillRect(this.x, this.y, BLOCK_SIZE, BLOCK_SIZE);
-  }
-}
 
 function prepare() {
   document.querySelector("body").appendChild(canvas);
@@ -65,26 +55,32 @@ function prepare() {
 
 class Snake {
   constructor() {
-    this.head = new Rect(WIDTH / 2, HEIGHT / 2);
-    this.snake = [this.head, new Rect(this.head.x - BLOCK_SIZE, this.head.y)];
+    this.head = new Rect(WIDTH / 2, HEIGHT / 2, SNAKE_COLOR);
+    this.snake = [
+      this.head,
+      new Rect(this.head.x - BLOCK_SIZE, this.head.y, SNAKE_COLOR),
+    ];
     this.direction = DOWN;
     this.food = null;
     this.food_();
   }
 
   food_() {
-    let x = (random(Math.floor(canvas.width / BLOCK_SIZE)) * BLOCK_SIZE) - BLOCK_SIZE;
-    let y = (random(Math.floor(canvas.height / BLOCK_SIZE)) * BLOCK_SIZE) - BLOCK_SIZE;
-    if(x + BLOCK_SIZE > canvas.width ||  x - BLOCK_SIZE < 0) this.food_();
-    if(y + BLOCK_SIZE > canvas.height || y - BLOCK_SIZE < 0) this.food_();
-    this.food = new Rect(x, y);
+    let x =
+      (random(Math.floor((canvas.width - BLOCK_SIZE) / BLOCK_SIZE)) * BLOCK_SIZE);
+    let y =
+      (random(Math.floor((canvas.height - BLOCK_SIZE) / BLOCK_SIZE)) * BLOCK_SIZE);
+    //if (x + BLOCK_SIZE > canvas.width || x - BLOCK_SIZE < 0) this.food_();
+    //if (y + BLOCK_SIZE > canvas.height || y - BLOCK_SIZE < 0) this.food_();
+    this.food = new Rect(x, y, FOOD_COLOR);
+    console.log(this.food);
   }
 
   draw() {
     for (let i = 0; i < this.snake.length; i++) {
-      this.snake[i].draw(ctx, "#ff0000");
+      this.snake[i].draw(ctx);
     }
-    this.food.draw(ctx, "#ffff00");
+    this.food.draw(ctx);
   }
 
   move() {
@@ -109,7 +105,7 @@ class Snake {
         break;
     }
 
-    this.head = new Rect(x, y);
+    this.head = new Rect(x, y, SNAKE_COLOR);
     this.snake.unshift(this.head);
     if (this.head.x == this.food.x && this.head.y == this.food.y) {
       this.food_();
